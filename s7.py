@@ -4,9 +4,9 @@ from streamlit_option_menu import option_menu
 import numpy as np
 
 # Load models
-diabetes_model = pickle.load(open('D:/sem5 internship/diabbetes_model.sav', 'rb'))
-heart_model = pickle.load(open("D:\sem5 internship\heart(logistic).sva", 'rb'))
-parkinsons_model = pickle.load(open("D:/sem5 internship/parkinsons_logistic.sav", 'rb'))
+diabetes_model = pickle.load(open('diabbetes_model.sav', 'rb'))
+heart_model = pickle.load(open("heart(logistic).sva", 'rb'))
+parkinsons_model = pickle.load(open("parkinsons_logistic.sav", 'rb'))
 
 # Sidebar Navigation
 with st.sidebar:
