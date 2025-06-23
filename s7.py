@@ -1,6 +1,5 @@
 import pickle
 import streamlit as st
-from streamlit_option_menu import option_menu
 import numpy as np
 
 # Load models
@@ -8,14 +7,11 @@ diabetes_model = pickle.load(open('diabbetes_model.sav', 'rb'))
 heart_model = pickle.load(open("heart(logistic).sva", 'rb'))
 parkinsons_model = pickle.load(open("parkinsons_logistic.sav", 'rb'))
 
-# Sidebar Navigation
-with st.sidebar:
-    select = option_menu('Multiple Disease Prediction System',
-                         ['Diabetes Prediction',
-                          'Heart Disease Prediction',
-                          'Parkinson Prediction'],
-                         icons=['activity', 'heart', 'person'],
-                         default_index=0)
+# Sidebar navigation using native selectbox (no extra dependency)
+select = st.sidebar.selectbox(
+    'Select Prediction System',
+    ['Diabetes Prediction', 'Heart Disease Prediction', 'Parkinson Prediction']
+)
 
 # ------------------------- DIABETES -----------------------------------
 if select == 'Diabetes Prediction':
@@ -60,7 +56,7 @@ if select == 'Diabetes Prediction':
 # ------------------------- HEART DISEASE ------------------------------
 elif select == 'Heart Disease Prediction':
     st.title("❤️ Heart Disease Prediction App")
-    
+
     col1, col2, col3, col4 = st.columns(4)
     with col1:
         age = st.text_input('Age')
@@ -111,7 +107,6 @@ elif select == 'Heart Disease Prediction':
 elif select == 'Parkinson Prediction':
     st.title("🧠 Parkinson’s Disease Prediction App")
 
-    # Create 2 columns for cleaner layout
     col1, col2, col3, col4, col5 = st.columns(5)
 
     with col1:
@@ -156,10 +151,13 @@ elif select == 'Parkinson Prediction':
                 float(dda), float(nhr), float(hnr), float(rpde),
                 float(dfa), float(spread1), float(spread2), float(d2),
                 float(ppe)
-                ]
-            park_prediction = parkinsons_model.predict(input_data)
-        except ValueError:
+            ]
+            park_prediction = parkinsons_model.predict([input_features])
+            if park_prediction[0] == 0:
+                diagnosis = '🟢 No Parkinson’s Disease Detected'
+            else:
+                diagnosis = '🔴 Parkinson’s Disease Detected'
+        except:
             diagnosis = "❌ Please enter valid numerical values in all fields."
 
     st.success(diagnosis)
-
