@@ -5,14 +5,18 @@ Created on Mon Jun 23 10:28:59 2025
 @author: soham
 """
 
+import os
 import pickle
 import streamlit as st
 from streamlit_option_menu import option_menu
 
-# Load the trained models
-heart = pickle.load(open(r'heart(logistic).sav', 'rb'))
-parkinson = pickle.load(open(r'parkinson(svm).sav', 'rb'))
-diabetes = pickle.load(open(r'diabetes_logistic.sav', 'rb'))
+# Get current directory
+base_path = os.path.dirname(__file__)
+
+# Load the trained models safely
+heart = pickle.load(open(os.path.join(base_path, 'heart_model.sav'), 'rb'))
+parkinson = pickle.load(open(os.path.join(base_path, 'parkinson_model.sav'), 'rb'))
+diabetes = pickle.load(open(os.path.join(base_path, 'diabetes_model.sav'), 'rb'))
 
 # Sidebar menu
 with st.sidebar:
