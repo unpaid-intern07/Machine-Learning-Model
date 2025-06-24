@@ -43,21 +43,32 @@ if selected == 'Weather Predictor':
     diagnosis = ''
 
     if st.button("Predict Weather Type"):
-        try:
-            # Optional: Encode season and location manually or using the same encoding used during training
-            season_map = {"Spring": 0, "Summer": 1, "Autumn": 2, "Winter": 3}
-            location_map = {"City A": 0, "City B": 1, "City C": 2, "Other": 3}
+        # Check for empty inputs first
+        required_fields = [temperature, humidity, wind_speed, precipitation,
+                           cloud_cover, pressure, uv_index, visibility]
 
-            input_data = [
-                float(temperature), float(humidity), float(wind_speed), float(precipitation),
-                float(cloud_cover), float(pressure), float(uv_index), season_map[season],
-                float(visibility), location_map[location]
-            ]
+        if any(field.strip() == "" for field in required_fields):
+            diagnosis = "Please fill in all numerical fields before submitting."
+        else:
+            try:
+                # Encode categorical fields
+                season_map = {"Spring": 0, "Summer": 1, "Autumn": 2, "Winter": 3}
+                location_map = {"City A": 0, "City B": 1, "City C": 2, "Other": 3}
 
-            prediction = weather_model.predict([input_data])[0]
-            diagnosis = f"Predicted Weather: {prediction}"
+                # Convert all fields to float
+                input_data = [
+                    float(temperature), float(humidity), float(wind_speed), float(precipitation),
+                    float(cloud_cover), float(pressure), float(uv_index), season_map[season],
+                    float(visibility), location_map[location]
+                ]
 
-        except ValueError:
-            diagnosis = "Please enter valid numerical values in all fields."
+                # Debug print (optional)
+                st.write("Encoded Input Data:", input_data)
+
+                prediction = weather_model.predict([input_data])[0]
+                diagnosis = f"Predicted Weather: {prediction}"
+
+            except ValueError:
+                diagnosis = "Invalid input detected. Please check each field for correct numbers."
 
         st.success(diagnosis)
