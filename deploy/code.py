@@ -5,7 +5,7 @@ from streamlit_option_menu import option_menu
 
 # Load model
 base_path = os.path.dirname(__file__)
-model_path = os.path.join(base_path, 'weather_model.sav')  # Adjust path if needed
+model_path = os.path.join(base_path, 'weather_model.sav')
 weather_model = pickle.load(open(model_path, 'rb'))
 
 # Sidebar
@@ -36,23 +36,30 @@ if selected == 'Weather Predictor':
 
     with col3:
         season = st.selectbox("Season", ["Winter", "Spring", "Autumn", "Summer"])
-        location = st.selectbox("Location", ["Inland", "Mountain", "Coastal"])
+        location = st.selectbox("Location", ["Coastal", "Mountain", "Inland"])  # Matches lowercase training keys
         weather_type = st.selectbox("Weather Type", ["Rainy", "Sunny", "Cloudy", "Snowy"])
 
-    # Mappings used during training
+    # Correct mapping as per your model training
     season_map = {"Winter": 0, "Spring": 1, "Autumn": 2, "Summer": 3}
-    location_map = {"Inland": 0, "Mountain": 1, "Coastal": 2}
+    location_map = {"Coastal": 0, "Mountain": 1, "Inland": 2}
     weather_type_map = {"Rainy": 0, "Sunny": 1, "Cloudy": 2, "Snowy": 3}
 
+    # Output label mapping for prediction result
+    weather_label_map = {
+        0: "Rainy ☔",
+        1: "Sunny ☀️",
+        2: "Cloudy ☁️",
+        3: "Snowy ❄️"
+    }
+
     if st.button("Predict"):
-        # Check all numerical fields are filled
         inputs = [temperature, humidity, wind_speed, precipitation, pressure,
                   uv_index, visibility, cloud_cover]
+
         if any(val.strip() == "" for val in inputs):
             st.warning("⚠️ Please fill in all numerical fields.")
         else:
             try:
-                # Convert inputs
                 input_data = [
                     float(temperature), float(humidity), float(wind_speed), float(precipitation),
                     float(pressure), float(uv_index), float(visibility),
@@ -61,10 +68,10 @@ if selected == 'Weather Predictor':
                 ]
 
                 st.write("🔍 Input to Model:", input_data)
-                st.write("Expected Features:", weather_model.n_features_in_)
-
                 prediction = weather_model.predict([input_data])[0]
-                st.success(f"✅ Weather prediction result: {prediction}")
+                diagnosis = f"✅ Weather prediction result: {weather_label_map.get(prediction, 'Unknown')}"
 
             except Exception as e:
-                st.error(f"❌ Error: {e}")
+                diagnosis = f"❌ Error: {e}"
+
+            st.success(diagnosis)
