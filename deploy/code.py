@@ -46,17 +46,17 @@ if selected == 'Predict Placement':
     if st.button("Predict Placement"):
         try:
             input_dict = {
-                'gender': gender,
+                'gender': gender.lower(),
                 'ssc_p': ssc_p,
-                'ssc_b': ssc_b,
+                'ssc_b': ssc_b.lower(),
                 'hsc_p': hsc_p,
-                'hsc_b': hsc_b,
-                'hsc_s': hsc_s,
+                'hsc_b': hsc_b.lower(),
+                'hsc_s': hsc_s.lower(),
                 'degree_p': degree_p,
-                'degree_t': degree_t,
-                'workex': workex,
+                'degree_t': degree_t.lower(),
+                'workex': workex.lower(),
                 'etest_p': etest_p,
-                'specialisation': specialisation,
+                'specialisation': specialisation.lower(),
                 'mba_p': mba_p
             }
 
