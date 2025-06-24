@@ -3,75 +3,68 @@ import pickle
 import streamlit as st
 from streamlit_option_menu import option_menu
 
-# Load model
+# Load trained model
 base_path = os.path.dirname(__file__)
-model_path = os.path.join(base_path, 'weather_model.sav')
-weather_model = pickle.load(open(model_path, 'rb'))
+model_path = os.path.join(base_path, 'placement_model.sav')
+model = pickle.load(open(model_path, 'rb'))
 
 # Sidebar
 with st.sidebar:
     selected = option_menu(
-        'Weather Prediction App',
-        ['Weather Predictor'],
-        icons=['cloud-sun'],
+        'Placement Prediction App',
+        ['Predict Placement'],
+        icons=['briefcase'],
         default_index=0
     )
 
-if selected == 'Weather Predictor':
-    st.title('☀️ Weather Condition Predictor')
+if selected == 'Predict Placement':
+    st.title('🎓 Campus Placement Predictor')
 
+    # Collect user input
     col1, col2, col3 = st.columns(3)
 
     with col1:
-        temperature = st.text_input("Temperature (°C)")
-        humidity = st.text_input("Humidity (%)")
-        wind_speed = st.text_input("Wind Speed (km/h)")
-        precipitation = st.text_input("Precipitation (%)")
+        gender = st.selectbox("Gender", ["Male", "Female"])
+        ssc_p = st.number_input("SSC Percentage", min_value=0.0, max_value=100.0)
+        hsc_p = st.number_input("HSC Percentage", min_value=0.0, max_value=100.0)
+        degree_p = st.number_input("Degree Percentage", min_value=0.0, max_value=100.0)
 
     with col2:
-        pressure = st.text_input("Atmospheric Pressure (hPa)")
-        uv_index = st.text_input("UV Index")
-        visibility = st.text_input("Visibility (km)")
-        cloud_cover = st.text_input("Cloud Cover (%)")
+        ssc_b = st.selectbox("SSC Board", ["Central", "Others"])
+        hsc_b = st.selectbox("HSC Board", ["Central", "Others"])
+        hsc_s = st.selectbox("HSC Stream", ["Commerce", "Science", "Arts"])
+        workex = st.selectbox("Work Experience", ["Yes", "No"])
 
     with col3:
-        season = st.selectbox("Season", ["Winter", "Spring", "Autumn", "Summer"])
-        location = st.selectbox("Location", ["Coastal", "Mountain", "Inland"])  # Matches lowercase training keys
-        weather_type = st.selectbox("Weather Type", ["Rainy", "Sunny", "Cloudy", "Snowy"])
+        degree_t = st.selectbox("Degree Type", ["Sci&Tech", "Comm&Mgmt", "Others"])
+        etest_p = st.number_input("E-test Percentage", min_value=0.0, max_value=100.0)
+        specialisation = st.selectbox("MBA Specialisation", ["Mkt&HR", "Mkt&Fin"])
+        mba_p = st.number_input("MBA Percentage", min_value=0.0, max_value=100.0)
 
-    # Correct mapping as per your model training
-    season_map = {"Winter": 0, "Spring": 1, "Autumn": 2, "Summer": 3}
-    location_map = {"Coastal": 0, "Mountain": 1, "Inland": 2}
-    weather_type_map = {"Rainy": 0, "Sunny": 1, "Cloudy": 2, "Snowy": 3}
+    # On predict
+    if st.button("Predict Placement"):
+        try:
+            input_dict = {
+                'gender': gender,
+                'ssc_p': ssc_p,
+                'ssc_b': ssc_b,
+                'hsc_p': hsc_p,
+                'hsc_b': hsc_b,
+                'hsc_s': hsc_s,
+                'degree_p': degree_p,
+                'degree_t': degree_t,
+                'workex': workex,
+                'etest_p': etest_p,
+                'specialisation': specialisation,
+                'mba_p': mba_p
+            }
 
-    # Output label mapping for prediction result
-    weather_label_map = {
-        0: "Rainy ☔",
-        1: "Sunny ☀️",
-        2: "Cloudy ☁️",
-        3: "Snowy ❄️"
-    }
+            input_df = pd.DataFrame([input_dict])
 
-    if st.button("Predict"):
-        inputs = [temperature, humidity, wind_speed, precipitation, pressure,
-                  uv_index, visibility, cloud_cover]
+            prediction = model.predict(input_df)[0]
+            result = "✅ Placed" if prediction == 1 else "❌ Not Placed"
 
-        if any(val.strip() == "" for val in inputs):
-            st.warning("⚠️ Please fill in all numerical fields.")
-        else:
-            try:
-                input_data = [
-                    float(temperature), float(humidity), float(wind_speed), float(precipitation),
-                    float(pressure), float(uv_index), float(visibility),
-                    season_map[season], location_map[location],
-                    weather_type_map[weather_type], float(cloud_cover)
-                ]
+            st.success(f"🎯 Prediction: {result}")
 
-                st.write("🔍 Input to Model:", input_data)
-                prediction = weather_model.predict([input_data])[0]
-                diagnosis = f"✅ Weather prediction result: {weather_label_map.get(prediction, 'Unknown')}"
-
-            except Exception as e:
-                diagnosis = f"❌ Error: {e}"
-
-            st.success(diagnosis)
+        except Exception as e:
+            st.error(f"❌ Error: {e}")
