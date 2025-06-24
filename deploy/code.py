@@ -1,15 +1,14 @@
 import os
 import pickle
 import streamlit as st
-import numpy as np
 from streamlit_option_menu import option_menu
 
 # Load model
 base_path = os.path.dirname(__file__)
-model_path = os.path.join(base_path, 'weather_model.sav')
+model_path = os.path.join(base_path, 'weather_model.sav')  # Adjust path if needed
 weather_model = pickle.load(open(model_path, 'rb'))
 
-# Sidebar navigation
+# Sidebar
 with st.sidebar:
     selected = option_menu(
         'Weather Prediction App',
@@ -18,57 +17,54 @@ with st.sidebar:
         default_index=0
     )
 
-# Main app
 if selected == 'Weather Predictor':
-    st.title('Weather Condition Predictor')
+    st.title('☀️ Weather Condition Predictor')
 
     col1, col2, col3 = st.columns(3)
 
     with col1:
         temperature = st.text_input("Temperature (°C)")
+        humidity = st.text_input("Humidity (%)")
         wind_speed = st.text_input("Wind Speed (km/h)")
-        cloud_cover = st.text_input("Cloud Cover (%)")
-        uv_index = st.text_input("UV Index")
+        precipitation = st.text_input("Precipitation (%)")
 
     with col2:
-        humidity = st.text_input("Humidity (%)")
-        precipitation = st.text_input("Precipitation (%)")
         pressure = st.text_input("Atmospheric Pressure (hPa)")
-        season = st.selectbox("Season", ["Spring", "Summer", "Autumn", "Winter"])
+        uv_index = st.text_input("UV Index")
+        visibility = st.text_input("Visibility (km)")
+        cloud_cover = st.text_input("Cloud Cover (%)")
 
     with col3:
-        visibility = st.text_input("Visibility (km)")
-        location = st.selectbox("Location", ["City A", "City B", "City C", "Other"])  # Replace with actual location list
+        season = st.selectbox("Season", ["Winter", "Spring", "Autumn", "Summer"])
+        location = st.selectbox("Location", ["Inland", "Mountain", "Coastal"])
+        weather_type = st.selectbox("Weather Type", ["Rainy", "Sunny", "Cloudy", "Snowy"])
 
-    diagnosis = ''
+    # Mappings used during training
+    season_map = {"Winter": 0, "Spring": 1, "Autumn": 2, "Summer": 3}
+    location_map = {"Inland": 0, "Mountain": 1, "Coastal": 2}
+    weather_type_map = {"Rainy": 0, "Sunny": 1, "Cloudy": 2, "Snowy": 3}
 
-    if st.button("Predict Weather Type"):
-        # Check for empty inputs first
-        required_fields = [temperature, humidity, wind_speed, precipitation,
-                           cloud_cover, pressure, uv_index, visibility]
-
-        if any(field.strip() == "" for field in required_fields):
-            diagnosis = "Please fill in all numerical fields before submitting."
+    if st.button("Predict"):
+        # Check all numerical fields are filled
+        inputs = [temperature, humidity, wind_speed, precipitation, pressure,
+                  uv_index, visibility, cloud_cover]
+        if any(val.strip() == "" for val in inputs):
+            st.warning("⚠️ Please fill in all numerical fields.")
         else:
             try:
-                # Encode categorical fields
-                season_map = {"Spring": 0, "Summer": 1, "Autumn": 2, "Winter": 3}
-                location_map = {"City A": 0, "City B": 1, "City C": 2, "Other": 3}
-
-                # Convert all fields to float
+                # Convert inputs
                 input_data = [
                     float(temperature), float(humidity), float(wind_speed), float(precipitation),
-                    float(cloud_cover), float(pressure), float(uv_index), season_map[season],
-                    float(visibility), location_map[location]
+                    float(pressure), float(uv_index), float(visibility),
+                    season_map[season], location_map[location],
+                    weather_type_map[weather_type], float(cloud_cover)
                 ]
 
-                # Debug print (optional)
-                st.write("Encoded Input Data:", input_data)
+                st.write("🔍 Input to Model:", input_data)
+                st.write("Expected Features:", weather_model.n_features_in_)
 
                 prediction = weather_model.predict([input_data])[0]
-                diagnosis = f"Predicted Weather: {prediction}"
+                st.success(f"✅ Weather prediction result: {prediction}")
 
-            except ValueError:
-                diagnosis = "Invalid input detected. Please check each field for correct numbers."
-
-        st.success(diagnosis)
+            except Exception as e:
+                st.error(f"❌ Error: {e}")
