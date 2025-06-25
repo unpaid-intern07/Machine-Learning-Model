@@ -4,12 +4,12 @@ import numpy as np
 from streamlit_option_menu import option_menu
 import os
 
-# Load trained model
+# ✅ Define base path BEFORE using it
 base_path = os.path.dirname(__file__)
-model_path = os.path.join(base_path, 'online.sav')
-model = pickle.load(open(model_path, 'rb'))
+model_path = os.path.join(base_path, 'online.sav')  # Make sure 'online.sav' is in the same folder
+model = pickle.load(open(model_path, 'rb'))  # ✅ model, not 'w'
 
-# Prediction logic
+# Prediction function
 def predict(input_data):
     input_array = np.asarray(input_data).reshape(1, -1)
     prediction = model.predict(input_array)
@@ -23,13 +23,13 @@ def predict(input_data):
     else:
         return 'Unknown'
 
-# Main app
+# Streamlit app
 def main():
     st.title("🎮 Online Gaming Engagement Prediction App")
 
-    # Inputs
+    # Input fields
     Age = st.text_input("Age")
-    Gender = st.selectbox("Gender", ['Male', 'Female'])  # Male=1, Female=0
+    Gender = st.selectbox("Gender", ['Male', 'Female'])
     Location = st.selectbox("Location", ['USA', 'Europe', 'Asia', 'Other'])
     GameGenre = st.selectbox("Game Genre", ['Strategy', 'Sports', 'Action'])
     PlayTimeHours = st.text_input("Play Time Hours")
@@ -46,10 +46,8 @@ def main():
     genre_map = {'Strategy': 0, 'Sports': 1, 'Action': 2}
     difficulty_map = {'Easy': 0, 'Medium': 1, 'Hard': 2}
 
-    # Button logic
     if st.button("🔍 Predict Engagement Level"):
         try:
-            # Convert and map inputs
             input_list = [
                 float(Age),
                 gender_map[Gender],
@@ -68,7 +66,7 @@ def main():
             st.success(f"✅ Predicted Engagement Level: *{result}*")
 
         except Exception as e:
-            st.error(f"❌ Error: Please check your inputs.\nDetails: {e}")
+            st.error(f"❌ Error: Please enter valid inputs. Details: {e}")
 
 if __name__ == '__main__':
     main()
