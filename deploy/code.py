@@ -1,72 +1,67 @@
 import pickle
 import streamlit as st
 import numpy as np
-from streamlit_option_menu import option_menu
 import os
+from streamlit_option_menu import option_menu
 
-# ✅ Define base path BEFORE using it
+# Load model
 base_path = os.path.dirname(__file__)
-model_path = os.path.join(base_path, 'online.sav')  # Make sure 'online.sav' is in the same folder
-model = pickle.load(open(model_path, 'rb'))  # ✅ model, not 'w'
+model_path = os.path.join(base_path, 'lung_cancer_model.sav')
+model = pickle.load(open(model_path, 'rb'))
 
-# Prediction function
-def predict(input_data):
-    input_array = np.asarray(input_data).reshape(1, -1)
-    prediction = model.predict(input_array)
+# Sidebar
+with st.sidebar:
+    selected = option_menu(
+        'Lung Cancer Risk App',
+        ['Predict Lung Cancer Risk'],
+        icons=['lungs'],
+        default_index=0
+    )
 
-    if prediction[0] == 0:
-        return 'High'
-    elif prediction[0] == 1:
-        return 'Low'
-    elif prediction[0] == 2:
-        return 'Medium'
-    else:
-        return 'Unknown'
+# Main Page
+if selected == 'Predict Lung Cancer Risk':
+    st.title("🫁 Lung Cancer Risk Prediction")
 
-# Streamlit app
-def main():
-    st.title("🎮 Online Gaming Engagement Prediction App")
+    col1, col2 = st.columns(2)
 
-    # Input fields
-    Age = st.text_input("Age")
-    Gender = st.selectbox("Gender", ['Male', 'Female'])
-    Location = st.selectbox("Location", ['USA', 'Europe', 'Asia', 'Other'])
-    GameGenre = st.selectbox("Game Genre", ['Strategy', 'Sports', 'Action'])
-    PlayTimeHours = st.text_input("Play Time Hours")
-    InGamePurchases = st.text_input("In-Game Purchases")
-    GameDifficulty = st.selectbox("Game Difficulty", ['Easy', 'Medium', 'Hard'])
-    SessionsPerWeek = st.text_input("Sessions Per Week")
-    AvgSessionDurationMinutes = st.text_input("Average Session Duration (Minutes)")
-    PlayerLevel = st.text_input("Player Level")
-    AchievementsUnlocked = st.text_input("Achievements Unlocked")
+    with col1:
+        age = st.number_input("Age", min_value=1, max_value=120)
+        gender = st.selectbox("Gender", ['Male', 'Female'])
+        smoking = st.selectbox("Do you smoke?", ['Yes', 'No'])
+        yellow_fingers = st.selectbox("Yellow Fingers", ['Yes', 'No'])
+        anxiety = st.selectbox("Do you experience anxiety?", ['Yes', 'No'])
+        peer_pressure = st.selectbox("Peer Pressure", ['Yes', 'No'])
+        chronic_disease = st.selectbox("Do you have a chronic disease?", ['Yes', 'No'])
+        fatigue = st.selectbox("Fatigue?", ['Yes', 'No'])
 
-    # Encoding maps
-    gender_map = {'Male': 1, 'Female': 0}
-    location_map = {'USA': 0, 'Europe': 1, 'Asia': 2, 'Other': 3}
-    genre_map = {'Strategy': 0, 'Sports': 1, 'Action': 2}
-    difficulty_map = {'Easy': 0, 'Medium': 1, 'Hard': 2}
+    with col2:
+        allergy = st.selectbox("Any Allergies?", ['Yes', 'No'])
+        wheezing = st.selectbox("Wheezing?", ['Yes', 'No'])
+        alcohol = st.selectbox("Do you drink alcohol?", ['Yes', 'No'])
+        coughing = st.selectbox("Frequent coughing?", ['Yes', 'No'])
+        short_breath = st.selectbox("Shortness of breath?", ['Yes', 'No'])
+        swallowing = st.selectbox("Difficulty in swallowing?", ['Yes', 'No'])
+        chest_pain = st.selectbox("Chest Pain?", ['Yes', 'No'])
 
-    if st.button("🔍 Predict Engagement Level"):
+    if st.button("🔍 Predict"):
         try:
-            input_list = [
-                float(Age),
-                gender_map[Gender],
-                location_map[Location],
-                genre_map[GameGenre],
-                float(PlayTimeHours),
-                float(InGamePurchases),
-                difficulty_map[GameDifficulty],
-                float(SessionsPerWeek),
-                float(AvgSessionDurationMinutes),
-                float(PlayerLevel),
-                float(AchievementsUnlocked)
+            # Encoding
+            def encode(val): return 1 if val == 'Yes' else 0
+            gender_val = 1 if gender == 'Male' else 0
+
+            input_data = [
+                age, gender_val,
+                encode(smoking), encode(yellow_fingers), encode(anxiety),
+                encode(peer_pressure), encode(chronic_disease), encode(fatigue),
+                encode(allergy), encode(wheezing), encode(alcohol), encode(coughing),
+                encode(short_breath), encode(swallowing), encode(chest_pain)
             ]
 
-            result = predict(input_list)
-            st.success(f"✅ Predicted Engagement Level: *{result}*")
+            input_array = np.asarray(input_data).reshape(1, -1)
+            prediction = model.predict(input_array)[0]
+            result = "🛑 High Risk of Lung Cancer" if prediction == 1 else "✅ Low Risk of Lung Cancer"
+
+            st.success(f"🎯 Prediction: {result}")
 
         except Exception as e:
-            st.error(f"❌ Error: Please enter valid inputs. Details: {e}")
-
-if __name__ == '__main__':
-    main()
+            st.error(f"❌ Error: {e}")
