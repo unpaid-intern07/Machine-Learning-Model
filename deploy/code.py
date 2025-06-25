@@ -2,9 +2,10 @@ import pickle
 import streamlit as st
 import numpy as np
 from streamlit_option_menu import option_menu
-
+import os
 # Load trained model
-w = pickle.load(open(r'online.sav', 'rb'))
+model_path = os.path.join(base_path, 'online.sav')
+model = pickle.load(open(model_path, 'rb'))
 
 def predict(input_data):
     input_array = np.asarray(input_data).reshape(1, -1)
