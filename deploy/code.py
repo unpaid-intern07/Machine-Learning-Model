@@ -3,11 +3,11 @@ import numpy as np
 import pickle
 
 # Load trained model
-with open('C:/Users/HP/deploy/cancer_survival_model.sav', 'rb') as f:
+with open('cancer_survival_model.sav', 'rb') as f:
     model = pickle.load(f)
 
 # Load label encoders
-with open('C:/Users/HP/deploy/label_encoders.sav', 'rb') as f:
+with open('label_encoders.sav', 'rb') as f:
     encoders = pickle.load(f)
 
 # Title
