@@ -1,13 +1,19 @@
 import streamlit as st
 import numpy as np
 import pickle
+import os
+
+# Get current directory
+base_path = os.path.dirname(__file__)
 
 # Load trained model
-with open('cancer_survival_model.sav', 'rb') as f:
+model_path = os.path.join(base_path, 'cancer_survival_model.sav')
+with open(model_path, 'rb') as f:
     model = pickle.load(f)
 
 # Load label encoders
-with open('label_encoders.sav', 'rb') as f:
+enc_path = os.path.join(base_path, 'label_encoders.sav')
+with open(enc_path, 'rb') as f:
     encoders = pickle.load(f)
 
 # Title
@@ -40,6 +46,7 @@ def binary(val): return 1 if val == 'Yes' else 0
 if st.button("Predict"):
     try:
         input_data = np.array([[
+
             age,
             encoders['gender'].transform([gender])[0],
             encoders['country'].transform([country])[0],
